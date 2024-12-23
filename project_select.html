@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>स्वास्थ्य अधिकारी की जानकारी</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        select, button {
+            padding: 10px;
+            margin: 10px;
+            width: 250px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>मध्य प्रदेश के स्वास्थ्य अधिकारी की जानकारी</h1>
+    <p>कृपया जिला और ब्लॉक का चयन करें:</p>
+
+    <!-- जिला चयन Dropdown -->
+    <select id="district" onchange="loadBlocks()">
+        <option value="">जिला चुनें</option>
+        <option value="Bhopal">भोपाल</option>
+        <option value="Indore">इंदौर</option>
+        <option value="Jabalpur">जबलपुर</option>
+    </select>
+
+    <!-- ब्लॉक चयन Dropdown -->
+    <select id="block" disabled>
+        <option value="">ब्लॉक चुनें</option>
+    </select>
+
+    <!-- Search Button -->
+    <br>
+    <button id="search" disabled onclick="findHealthOfficer()">मदद ढूंढें</button>
+
+    <!-- Result -->
+    <div class="result" id="result"></div>
+
+    <script>
+        // जिलों और ब्लॉकों का डेटा
+        const data = {
+            Bhopal: {
+                "Govindpura": { name: "डॉ. अजय शर्मा", post: "CMHO", phone: "1234567890" },
+                "Huzur": { name: "डॉ. सीमा वर्मा", post: "SMO", phone: "9876543210" }
+            },
+            Indore: {
+                "Indore City": { name: "डॉ. रोहित मिश्रा", post: "CMHO", phone: "5678901234" },
+                "Mhow": { name: "डॉ. नीलिमा सिंह", post: "SMO", phone: "6789012345" }
+            },
+            Jabalpur: {
+                "Jabalpur Rural": { name: "डॉ. प्रशांत राय", post: "CMHO", phone: "2345678901" },
+                "Panagar": { name: "डॉ. कविता गुप्ता", post: "SMO", phone: "3456789012" }
+            }
+        };
+
+        const districtSelect = document.getElementById("district");
+        const blockSelect = document.getElementById("block");
+        const resultDiv = document.getElementById("result");
+        const searchButton = document.getElementById("search");
+
+        // ब्लॉक लोड करना
+        function loadBlocks() {
+            const district = districtSelect.value;
+            blockSelect.innerHTML = '<option value="">ब्लॉक चुनें</option>';
+            blockSelect.disabled = !district;
+
+            if (district && data[district]) {
+                Object.keys(data[district]).forEach(block => {
+                    const option = document.createElement("option");
+                    option.value = block;
+                    option.textContent = block;
+                    blockSelect.appendChild(option);
+                });
+                searchButton.disabled = true;
+            } else {
+                searchButton.disabled = true;
+            }
+        }
+
+        // सर्च बटन इनेबल करना
+        blockSelect.addEventListener("change", () => {
+            searchButton.disabled = !blockSelect.value;
+        });
+
+        // स्वास्थ्य अधिकारी की जानकारी ढूंढना
+        function findHealthOfficer() {
+            const district = districtSelect.value;
+            const block = blockSelect.value;
+
+            if (district && block && data[district][block]) {
+                const officer = data[district][block];
+                resultDiv.innerHTML = `
+                    <p><strong>नाम:</strong> ${officer.name}</p>
+                    <p><strong>पद:</strong> ${officer.post}</p>
+                    <p><strong>संपर्क:</strong> ${officer.phone}</p>
+                `;
+            } else {
+                resultDiv.innerHTML = "<p>कोई जानकारी उपलब्ध नहीं है।</p>";
+            }
+        }
+    </script>
+</body>
+</html>
