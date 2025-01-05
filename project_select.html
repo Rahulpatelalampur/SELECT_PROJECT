@@ -3,121 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>स्वास्थ्य अधिकारी की जानकारी</title>
+    <title>Advanced Quiz Game</title>
     <style>
+        /* General Styling */
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
             margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #4caf50, #81c784);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: #fff;
             padding: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        select, button {
+
+        .container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #4caf50;
+        }
+
+        .subject-selection {
+            margin: 20px 0;
+        }
+
+        .subject-selection select {
+            width: 100%;
             padding: 10px;
-            margin: 10px;
-            width: 250px;
-            font-size: 16px;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
         }
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
+
+        .question {
+            margin: 20px 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .options li {
+            margin: 10px 0;
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background 0.3s, transform 0.3s;
         }
+
+        .options li:hover {
+            background: #e8f5e9;
+            transform: translateX(5px);
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #4caf50, #66bb6a);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s, transform 0.3s;
+        }
+
         button:hover {
-            background-color: #0056b3;
+            background: linear-gradient(to right, #43a047, #388e3c);
+            transform: scale(1.05);
         }
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
+
+        .timer {
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            color: #d32f2f;
+            font-size: 1.2rem;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); color: #d32f2f; }
+            50% { transform: scale(1.1); color: #b71c1c; }
+            100% { transform: scale(1); color: #d32f2f; }
         }
     </style>
 </head>
 <body>
-    <h1>मध्य प्रदेश के स्वास्थ्य अधिकारी की जानकारी</h1>
-    <p>कृपया जिला और ब्लॉक का चयन करें:</p>
-
-    <!-- जिला चयन Dropdown -->
-    <select id="district" onchange="loadBlocks()">
-        <option value="">जिला चुनें</option>
-        <option value="Bhopal">भोपाल</option>
-        <option value="Indore">इंदौर</option>
-        <option value="Jabalpur">जबलपुर</option>
-    </select>
-
-    <!-- ब्लॉक चयन Dropdown -->
-    <select id="block" disabled>
-        <option value="">ब्लॉक चुनें</option>
-    </select>
-
-    <!-- Search Button -->
-    <br>
-    <button id="search" disabled onclick="findHealthOfficer()">मदद ढूंढें</button>
-
-    <!-- Result -->
-    <div class="result" id="result"></div>
+    <div class="container">
+        <h1>Quiz Game</h1>
+        <p id="welcome"></p>
+        <div id="subject-section">
+            <label for="subject">Select a Subject:</label>
+            <select id="subject">
+                <option value="general">General Knowledge</option>
+                <option value="science">Science</option>
+                <option value="math">Mathematics</option>
+            </select>
+            <button onclick="startQuiz()">Start Quiz</button>
+        </div>
+        <div id="quiz-section" style="display: none;">
+            <p id="timer" class="timer">Time Left: 60s</p>
+            <p id="question" class="question"></p>
+            <ul id="options" class="options"></ul>
+            <button id="submit" onclick="submitAnswer()">Submit Answer</button>
+        </div>
+        <div id="result-section" style="display: none;">
+            <h2>Quiz Completed!</h2>
+            <p id="score"></p>
+            <button onclick="reviewAnswers()">Review Answers</button>
+            <button onclick="restartQuiz()">Restart Quiz</button>
+        </div>
+        <div id="review-section" style="display: none;">
+            <h2>Review Your Answers</h2>
+            <ul id="review-list"></ul>
+            <button onclick="restartQuiz()">Restart Quiz</button>
+        </div>
+    </div>
 
     <script>
-        // जिलों और ब्लॉकों का डेटा
-        const data = {
-            Bhopal: {
-                "Govindpura": { name: "डॉ. अजय शर्मा", post: "CMHO", phone: "1234567890" },
-                "Huzur": { name: "डॉ. सीमा वर्मा", post: "SMO", phone: "9876543210" }
-            },
-            Indore: {
-                "Indore City": { name: "डॉ. रोहित मिश्रा", post: "CMHO", phone: "5678901234" },
-                "Mhow": { name: "डॉ. नीलिमा सिंह", post: "SMO", phone: "6789012345" }
-            },
-            Jabalpur: {
-                "Jabalpur Rural": { name: "डॉ. प्रशांत राय", post: "CMHO", phone: "2345678901" },
-                "Panagar": { name: "डॉ. कविता गुप्ता", post: "SMO", phone: "3456789012" }
-            }
+        const questions = {
+            general: [
+            	{question: "भारत का राष्ट्रीय गीत कौन सा है?", options: ["जन गण मन", "वंदे मातरम्", "सारे जहां से अच्छा", "हम होंगे कामयाब"], answer: "वंदे मातरम्" },
+    { question: "दुनिया का सबसे ऊंचा पर्वत कौन सा है?", options: ["कंचनजंगा", "माउंट एवरेस्ट", "नंगा पर्वत", "मकालू"], answer: "माउंट एवरेस्ट" },
+    { question: "भारत में राष्ट्रीय खेल कौन सा है?", options: ["क्रिकेट", "हॉकी", "कबड्डी", "फुटबॉल"], answer: "हॉकी" },
+    { question: "गांधी जी का जन्म कब हुआ था?", options: ["2 अक्टूबर 1869", "15 अगस्त 1870", "26 जनवरी 1875", "1 नवंबर 1865"], answer: "2 अक्टूबर 1869" },
+    { question: "स्वतंत्र भारत के पहले प्रधानमंत्री कौन थे?", options: ["महात्मा गांधी", "डॉ. राजेंद्र प्रसाद", "जवाहरलाल नेहरू", "लाल बहादुर शास्त्री"], answer: "जवाहरलाल नेहरू" },
+    { question: "UNO का गठन किस वर्ष हुआ?", options: ["1919", "1945", "1950", "1960"], answer: "1945" },
+    { question: "भारत में सबसे बड़ा राज्य कौन सा है?", options: ["महाराष्ट्र", "उत्तर प्रदेश", "राजस्थान", "मध्य प्रदेश"], answer: "राजस्थान" },
+    { question: "भारत का पहला आईआईटी कहाँ स्थापित हुआ?", options: ["मुंबई", "दिल्ली", "खड़गपुर", "चेन्नई"], answer: "खड़गपुर" },
+    { question: "भारत का पहला परमाणु परीक्षण कब हुआ?", options: ["1974", "1980", "1965", "1998"], answer: "1974" },
+    { question: "भारत का पहला नोबेल पुरस्कार विजेता कौन था?", options: ["सी.वी. रमन", "रवींद्रनाथ टैगोर", "होमी भाभा", "सुब्रमण्यम चंद्रशेखर"], answer: "रवींद्रनाथ टैगोर" }
+                ,{ question: "भारत का पहला राष्ट्रपति कौन था?", options: ["डॉ. राजेंद्र प्रसाद", "जवाहरलाल नेहरू", "महात्मा गांधी", "लाल बहादुर शास्त्री"], answer: "डॉ. राजेंद्र प्रसाद" },
+                { question: "पृथ्वी का सबसे बड़ा महाद्वीप कौन सा है?", options: ["एशिया", "अफ्रीका", "यूरोप", "अंटार्कटिका"], answer: "एशिया" }
+            ],
+            science: [
+            	{ question: "मनुष्य के शरीर में सबसे बड़ी हड्डी कौन सी है?", options: ["ऊरु हड्डी", "कलाई की हड्डी", "रीढ़ की हड्डी", "जबड़े की हड्डी"], answer: "ऊरु हड्डी" },
+    { question: "कौन सी गैस फलों को पकाने में उपयोग की जाती है?", options: ["एथिलीन", "मीथेन", "कार्बन डाइऑक्साइड", "ऑक्सीजन"], answer: "एथिलीन" },
+    { question: "किस यंत्र से रक्तचाप मापा जाता है?", options: ["थर्मामीटर", "स्फिग्मोमैनोमीटर", "स्टेथोस्कोप", "ऑक्सीमीटर"], answer: "स्फिग्मोमैनोमीटर" },
+    { question: "किस ग्रह को 'लाल ग्रह' कहा जाता है?", options: ["मंगल", "बृहस्पति", "शनि", "पृथ्वी"], answer: "मंगल" },
+    { question: "किस तत्व का प्रतीक 'Na' है?", options: ["नाइट्रोजन", "सोडियम", "नियोन", "निकल"], answer: "सोडियम" },
+    { question: "कौन सा तत्व 'गोल्डन मेटल' के नाम से जाना जाता है?", options: ["चांदी", "तांबा", "सोना", "प्लैटिनम"], answer: "सोना" },
+    { question: "इंसान के दिमाग का वजन लगभग कितना होता है?", options: ["1 किग्रा", "1.5 किग्रा", "2 किग्रा", "2.5 किग्रा"], answer: "1.5 किग्रा" },
+    { question: "सबसे तेज़ चलने वाली प्रकाश की गति कितनी होती है?", options: ["3 × 10^5 किमी/सेकंड", "3 × 10^8 मीटर/सेकंड", "3 × 10^3 किमी/घंटा", "3 × 10^6 मीटर/सेकंड"], answer: "3 × 10^8 मीटर/सेकंड" },
+    { question: "दूध में कौन सा प्रोटीन होता है?", options: ["कैसिन", "एलब्यूमिन", "ग्लूटेन", "केराटिन"], answer: "कैसिन" },
+    { question: "पृथ्वी पर गुरुत्वाकर्षण बल की खोज किसने की?", options: ["न्यूटन", "गैलीलियो", "आर्किमिडीज", "एडिसन"], answer: "न्यूटन" },
+                { question: "पानी का रासायनिक सूत्र क्या है?", options: ["H2O", "CO2", "O2", "CH4"], answer: "H2O" },
+                { question: "सूर्य का मुख्य गैस क्या है?", options: ["हाइड्रोजन", "ऑक्सीजन", "नाइट्रोजन", "कार्बन"], answer: "हाइड्रोजन" }
+            ],
+            math: [
+            {	question: "7 का घनफल (cube) क्या है?", options: ["343", "49", "21", "7"], answer: "343" },
+    { question: "π (पाई) का मान क्या है?", options: ["3.14", "2.71", "1.61", "4.22"], answer: "3.14" },
+    { question: "एक वर्ग के क्षेत्रफल का सूत्र क्या है?", options: ["l × b", "s²", "πr²", "2πr"], answer: "s²" },
+    { question: "यदि एक संख्या 25% बढ़ाई जाए तो उसका मान कितना होगा?", options: ["x + 25%", "1.25x", "x/25%", "x-25%"], answer: "1.25x" },
+    { question: "5 + (10 × 2) - 3 का मान क्या होगा?", options: ["22", "17", "23", "25"], answer: "22" },
+    { question: "दो समांतर रेखाओं के बीच कोण का मान क्या होता है?", options: ["0°", "90°", "180°", "360°"], answer: "0°" },
+    { question: "एक वृत्त का परिमाप का सूत्र क्या है?", options: ["πd", "2πr", "2r", "r²"], answer: "2πr" },
+    { question: "45 का 20% कितना होगा?", options: ["9", "15", "12", "18"], answer: "9" },
+    { question: "एक समकोण त्रिभुज का सबसे लंबा पक्ष क्या कहलाता है?", options: ["आधार", "कर्ण", "लंब", "त्रिज्या"], answer: "कर्ण" },
+    { question: "अगर x = 10 और y = 20, तो x + y का मान क्या होगा?", options: ["30", "20", "10", "15"], answer: "30" },
+                { question: "10 + 15 = ?", options: ["25", "20", "15", "30"], answer: "25" },
+                { question: "2 × 5 = ?", options: ["5", "10", "15", "20"], answer: "10" }
+            ]
         };
 
-        const districtSelect = document.getElementById("district");
-        const blockSelect = document.getElementById("block");
-        const resultDiv = document.getElementById("result");
-        const searchButton = document.getElementById("search");
+        let selectedSubject = "general";
+        let quizData = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let timeLeft = 60;
+        let timer;
+        let answers = [];
 
-        // ब्लॉक लोड करना
-        function loadBlocks() {
-            const district = districtSelect.value;
-            blockSelect.innerHTML = '<option value="">ब्लॉक चुनें</option>';
-            blockSelect.disabled = !district;
+        function startQuiz() {
+            selectedSubject = document.getElementById("subject").value;
+            quizData = questions[selectedSubject];
+            document.getElementById("subject-section").style.display = "none";
+            document.getElementById("quiz-section").style.display = "block";
+            currentQuestion = 0;
+            score = 0;
+            answers = [];
+            loadQuestion();
+            startTimer();
+        }
 
-            if (district && data[district]) {
-                Object.keys(data[district]).forEach(block => {
-                    const option = document.createElement("option");
-                    option.value = block;
-                    option.textContent = block;
-                    blockSelect.appendChild(option);
-                });
-                searchButton.disabled = true;
+        function loadQuestion() {
+            const questionData = quizData[currentQuestion];
+            document.getElementById("question").innerText = questionData.question;
+            const optionsList = document.getElementById("options");
+            optionsList.innerHTML = "";
+            questionData.options.forEach(option => {
+                const li = document.createElement("li");
+                li.innerHTML = `<input type="radio" name="option" value="${option}"> ${option}`;
+                optionsList.appendChild(li);
+            });
+        }
+
+        function startTimer() {
+            timeLeft = 60;
+            clearInterval(timer);
+            timer = setInterval(() => {
+                document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endQuiz();
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        function submitAnswer() {
+            const selectedOption = document.querySelector('input[name="option"]:checked');
+            answers.push({
+                question: quizData[currentQuestion].question,
+                selected: selectedOption ? selectedOption.value : "No Answer",
+                correct: quizData[currentQuestion].answer
+            });
+            if (selectedOption && selectedOption.value === quizData[currentQuestion].answer) {
+                score++;
+            }
+            currentQuestion++;
+            if (currentQuestion < quizData.length) {
+                loadQuestion();
             } else {
-                searchButton.disabled = true;
+                clearInterval(timer);
+                endQuiz();
             }
         }
 
-        // सर्च बटन इनेबल करना
-        blockSelect.addEventListener("change", () => {
-            searchButton.disabled = !blockSelect.value;
-        });
+        function endQuiz() {
+            document.getElementById("quiz-section").style.display = "none";
+            document.getElementById("result-section").style.display = "block";
+            document.getElementById("score").innerText = `Your score is ${score}/${quizData.length}`;
+        }
 
-        // स्वास्थ्य अधिकारी की जानकारी ढूंढना
-        function findHealthOfficer() {
-            const district = districtSelect.value;
-            const block = blockSelect.value;
+        function reviewAnswers() {
+            document.getElementById("result-section").style.display = "none";
+            document.getElementById("review-section").style.display = "block";
+            const reviewList = document.getElementById("review-list");
+            reviewList.innerHTML = "";
+            answers.forEach(answer => {
+                const li = document.createElement("li");
+                li.innerHTML = `<b>Q:</b> ${answer.question}<br><b>Your Answer:</b> ${answer.selected}<br><b>Correct Answer:</b> ${answer.correct}`;
+                reviewList.appendChild(li);
+            });
+        }
 
-            if (district && block && data[district][block]) {
-                const officer = data[district][block];
-                resultDiv.innerHTML = `
-                    <p><strong>नाम:</strong> ${officer.name}</p>
-                    <p><strong>पद:</strong> ${officer.post}</p>
-                    <p><strong>संपर्क:</strong> ${officer.phone}</p>
-                `;
-            } else {
-                resultDiv.innerHTML = "<p>कोई जानकारी उपलब्ध नहीं है।</p>";
-            }
+        function restartQuiz() {
+            document.getElementById("subject-section").style.display = "block";
+            document.getElementById("quiz-section").style.display = "none";
+            document.getElementById("result-section").style.display = "none";
+            document.getElementById("review-section").style.display = "none";
         }
     </script>
 </body>
